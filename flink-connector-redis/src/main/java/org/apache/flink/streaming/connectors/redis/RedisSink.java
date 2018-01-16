@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Objects;
 
 /**
@@ -90,6 +91,7 @@ public class RedisSink<IN> extends RichSinkFunction<IN> {
      * <p>For {@link RedisDataType#SORTED_SET} we need set name, the element and it's score.
      * {@code additionalKey} used as set name for {@link RedisDataType#SORTED_SET}
      */
+    private HashMap<String,String> hash;
     private String additionalKey;
     private RedisMapper<IN> redisSinkMapper;
     private RedisCommand redisCommand;
@@ -114,6 +116,7 @@ public class RedisSink<IN> extends RichSinkFunction<IN> {
         RedisCommandDescription redisCommandDescription = redisSinkMapper.getCommandDescription();
         this.redisCommand = redisCommandDescription.getCommand();
         this.additionalKey = redisCommandDescription.getAdditionalKey();
+        this.hash = redisCommandDescription.getHashMap();
     }
 
     /**
@@ -128,6 +131,7 @@ public class RedisSink<IN> extends RichSinkFunction<IN> {
     public void invoke(IN input) throws Exception {
         String key = redisSinkMapper.getKeyFromData(input);
         String value = redisSinkMapper.getValueFromData(input);
+        HashMap<String,String> hashMap= redisSinkMapper.getAdditionalParmaters(input);
 
         switch (redisCommand) {
             case RPUSH:
@@ -155,7 +159,7 @@ public class RedisSink<IN> extends RichSinkFunction<IN> {
                 this.redisCommandsContainer.zrem(this.additionalKey, key);
                 break;
             case HSET:
-                this.redisCommandsContainer.hset(this.additionalKey, key, value);
+                this.redisCommandsContainer.hset(this.additionalKey, key, value,hashMap);
                 break;
             default:
                 throw new IllegalArgumentException("Cannot process such data type: " + redisCommand);

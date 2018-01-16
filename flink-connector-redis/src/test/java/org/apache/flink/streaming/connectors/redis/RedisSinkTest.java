@@ -17,6 +17,7 @@
 package org.apache.flink.streaming.connectors.redis;
 
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisClusterConfig;
 import org.apache.flink.streaming.connectors.redis.common.config.FlinkJedisConfigBase;
@@ -26,10 +27,12 @@ import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommand;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisCommandDescription;
 import org.apache.flink.streaming.connectors.redis.common.mapper.RedisMapper;
 import org.apache.flink.util.TestLogger;
+
 import org.junit.Test;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 import java.net.InetSocketAddress;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -98,8 +101,8 @@ public class RedisSinkTest extends TestLogger {
     }
 
     private void testDownBehavior(FlinkJedisConfigBase config) throws Exception {
-        RedisSink<Tuple2<String, String>> redisSink = new RedisSink<>(config,
-            new RedisSinkITCase.RedisCommandMapper(RedisCommand.SADD));
+        RedisSink<Tuple3<String, String,HashMap<String,String>>> redisSink = new RedisSink<>(config,
+            new RedisSinkITCase.RedisAdditionalDataMapper(RedisCommand.SADD));
 
         try {
             redisSink.open(new Configuration());
@@ -119,7 +122,7 @@ public class RedisSinkTest extends TestLogger {
         }
     }
 
-    private class TestMapper implements RedisMapper<Tuple2<String, String>> {
+    private class TestMapper implements RedisMapper<Tuple3<String, String,HashMap<String,String>>> {
         private RedisCommandDescription redisCommandDescription;
 
         TestMapper(RedisCommandDescription redisCommandDescription){
@@ -131,13 +134,18 @@ public class RedisSinkTest extends TestLogger {
         }
 
         @Override
-        public String getKeyFromData(Tuple2<String, String> data) {
+        public String getKeyFromData(Tuple3<String, String,HashMap<String,String>> data) {
             return data.f0;
         }
 
         @Override
-        public String getValueFromData(Tuple2<String, String> data) {
+        public String getValueFromData(Tuple3<String, String,HashMap<String,String>> data) {
             return data.f1;
+        }
+
+        @Override
+        public HashMap<String, String> getAdditionalParmaters(Tuple3<String, String, HashMap<String, String>> data) {
+            return data.f2;
         }
     }
 }

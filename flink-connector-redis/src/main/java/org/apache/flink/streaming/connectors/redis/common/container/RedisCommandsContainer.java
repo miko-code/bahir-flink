@@ -16,8 +16,11 @@
  */
 package org.apache.flink.streaming.connectors.redis.common.container;
 
+import org.omg.CORBA.INTERNAL;
+
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.HashMap;
 
 /**
  * The container for all available Redis commands.
@@ -40,7 +43,7 @@ public interface RedisCommandsContainer extends Serializable {
      * @param hashField Hash field
      * @param value Hash value
      */
-    void hset(String key, String hashField, String value);
+    void hset(String key, String hashField, String value, HashMap<String,String> hash);
 
     /**
      * Insert the specified value at the tail of the list stored at key.

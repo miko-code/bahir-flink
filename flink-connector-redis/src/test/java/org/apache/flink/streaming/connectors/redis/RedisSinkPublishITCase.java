@@ -17,6 +17,7 @@
 package org.apache.flink.streaming.connectors.redis;
 
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.source.SourceFunction;
@@ -28,6 +29,7 @@ import org.apache.flink.streaming.connectors.redis.common.mapper.RedisMapper;
 import redis.clients.jedis.JedisPool;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.junit.Before;
@@ -59,9 +61,9 @@ public class RedisSinkPublishITCase extends RedisITCaseBase {
         FlinkJedisPoolConfig jedisPoolConfig = new FlinkJedisPoolConfig.Builder()
             .setHost(REDIS_HOST)
             .setPort(REDIS_PORT).build();
-        DataStreamSource<Tuple2<String, String>> source = env.addSource(new TestSourceFunction());
+        DataStreamSource<Tuple3<String, String,HashMap<String,String>>> source = env.addSource(new TestSourceFunction());
 
-        RedisSink<Tuple2<String, String>> redisSink = new RedisSink<>(jedisPoolConfig, new RedisTestMapper());
+        RedisSink<Tuple3<String, String,HashMap<String,String>>> redisSink = new RedisSink<>(jedisPoolConfig, new RedisTestMapper());
 
         source.addSink(redisSink);
 
@@ -90,15 +92,16 @@ public class RedisSinkPublishITCase extends RedisITCaseBase {
         }
     }
 
-    private static class TestSourceFunction implements SourceFunction<Tuple2<String, String>> {
+    private static class TestSourceFunction implements SourceFunction<Tuple3<String, String,HashMap<String,String>>> {
         private static final long serialVersionUID = 1L;
 
         private volatile boolean running = true;
 
         @Override
-        public void run(SourceContext<Tuple2<String, String>> ctx) throws Exception {
+        public void run(SourceContext<Tuple3<String, String,HashMap<String,String>>> ctx) throws Exception {
+            HashMap<String,String> hashMap = new HashMap<>();
             for (int i = 0; i < NUM_ELEMENTS && running; i++) {
-                ctx.collect(new Tuple2<>(REDIS_CHANNEL, "message #" + i));
+                ctx.collect(new Tuple3<>(REDIS_CHANNEL, "message #" + i,hashMap));
             }
         }
 
@@ -117,7 +120,7 @@ public class RedisSinkPublishITCase extends RedisITCaseBase {
 
     }
 
-    private static class RedisTestMapper implements RedisMapper<Tuple2<String, String>> {
+    private static class RedisTestMapper implements RedisMapper<Tuple3<String, String,HashMap<String,String>>> {
 
         @Override
         public RedisCommandDescription getCommandDescription() {
@@ -125,13 +128,18 @@ public class RedisSinkPublishITCase extends RedisITCaseBase {
         }
 
         @Override
-        public String getKeyFromData(Tuple2<String, String> data) {
+        public String getKeyFromData(Tuple3<String, String,HashMap<String,String>> data) {
             return data.f0;
         }
 
         @Override
-        public String getValueFromData(Tuple2<String, String> data) {
+        public String getValueFromData(Tuple3<String, String,HashMap<String,String>> data) {
             return data.f1;
+        }
+
+        @Override
+        public HashMap<String, String> getAdditionalParmaters(Tuple3<String, String,HashMap<String,String>> data) {
+            return data.f2;
         }
     }
 }

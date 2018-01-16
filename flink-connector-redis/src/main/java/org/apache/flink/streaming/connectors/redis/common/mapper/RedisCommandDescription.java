@@ -17,6 +17,7 @@
 package org.apache.flink.streaming.connectors.redis.common.mapper;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Objects;
 
 /**
@@ -51,6 +52,9 @@ public class RedisCommandDescription implements Serializable {
      * @param redisCommand the redis command type {@link RedisCommand}
      * @param additionalKey additional key for Hash and Sorted set data type
      */
+
+    private HashMap<String,String> hashMap;
+
     public RedisCommandDescription(RedisCommand redisCommand, String additionalKey) {
         Objects.requireNonNull(redisCommand, "Redis command type can not be null");
         this.redisCommand = redisCommand;
@@ -63,6 +67,21 @@ public class RedisCommandDescription implements Serializable {
             }
         }
     }
+
+    public RedisCommandDescription(RedisCommand redisCommand, String additionalKey,HashMap<String,String> hashMap) {
+        Objects.requireNonNull(redisCommand, "Redis command type can not be null");
+        this.redisCommand = redisCommand;
+        this.additionalKey = additionalKey;
+        this.hashMap = hashMap;
+
+        if (redisCommand.getRedisDataType() == RedisDataType.HASH ||
+                redisCommand.getRedisDataType() == RedisDataType.SORTED_SET) {
+            if (additionalKey == null) {
+                throw new IllegalArgumentException("Hash and Sorted Set should have additional key");
+            }
+        }
+    }
+
 
     /**
      * Use this constructor when command type is not in group {@link RedisDataType#HASH} or {@link RedisDataType#SORTED_SET}.
@@ -89,5 +108,9 @@ public class RedisCommandDescription implements Serializable {
      */
     public String getAdditionalKey() {
         return additionalKey;
+    }
+
+    public HashMap<String,String> getHashMap() {
+        return hashMap;
     }
 }

@@ -22,6 +22,7 @@ import redis.clients.jedis.JedisCluster;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Objects;
 
 /**
@@ -56,8 +57,10 @@ public class RedisClusterContainer implements RedisCommandsContainer, Closeable 
         jedisCluster.echo("Test");
     }
 
+
+
     @Override
-    public void hset(final String key, final String hashField, final String value) {
+    public void hset(final String key, final String hashField, final String value ,HashMap<String, String> hash) {
         try {
             jedisCluster.hset(key, hashField, value);
         } catch (Exception e) {

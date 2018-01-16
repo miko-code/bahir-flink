@@ -19,6 +19,7 @@ package org.apache.flink.streaming.connectors.redis.common.mapper;
 import org.apache.flink.api.common.functions.Function;
 
 import java.io.Serializable;
+import java.util.HashMap;
 
 /**
  * Function that creates the description how the input data should be mapped to redis type.
@@ -63,4 +64,6 @@ public interface RedisMapper<T> extends Function, Serializable {
      * @return value
      */
     String getValueFromData(T data);
+
+    HashMap<String, String> getAdditionalParmaters(T data) ;
 }

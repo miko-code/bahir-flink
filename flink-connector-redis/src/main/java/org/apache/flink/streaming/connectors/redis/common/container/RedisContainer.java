@@ -24,6 +24,7 @@ import redis.clients.jedis.JedisSentinelPool;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Objects;
 
 /**
@@ -86,11 +87,15 @@ public class RedisContainer implements RedisCommandsContainer, Closeable {
     }
 
     @Override
-    public void hset(final String key, final String hashField, final String value) {
+    public void hset(final String key, final String hashField, final String value,final HashMap<String,String> hash) {
         Jedis jedis = null;
         try {
             jedis = getInstance();
-            jedis.hset(key, hashField, value);
+          Long reply =   jedis.hset(key, hashField, value);
+          String Exp = hash.get("EXPIRE");
+          if(reply==1 && Exp != null){
+              jedis.expire(key,Integer.parseInt(Exp));
+          }
         } catch (Exception e) {
             if (LOG.isErrorEnabled()) {
                 LOG.error("Cannot send Redis message with command HSET to key {} and hashField {} error message {}",

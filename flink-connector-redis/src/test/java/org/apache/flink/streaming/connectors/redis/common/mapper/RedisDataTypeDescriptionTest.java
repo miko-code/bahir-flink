@@ -27,13 +27,13 @@ public class RedisDataTypeDescriptionTest extends TestLogger {
 
     @Test(expected=IllegalArgumentException.class)
     public void shouldThrowExceptionIfAdditionalKeyIsNotGivenForHashDataType(){
-        RedisSinkITCase.RedisCommandMapper redisCommandMapper = new RedisSinkITCase.RedisCommandMapper(RedisCommand.HSET);
+        RedisSinkITCase.RedisAdditionalDataMapper redisCommandMapper = new RedisSinkITCase.RedisAdditionalDataMapper(RedisCommand.HSET);
         redisCommandMapper.getCommandDescription();
     }
 
     @Test
     public void shouldReturnNullForAdditionalDataType(){
-        RedisSinkITCase.RedisCommandMapper redisCommandMapper = new RedisSinkITCase.RedisCommandMapper(RedisCommand.LPUSH);
+        RedisSinkITCase.RedisAdditionalDataMapper redisCommandMapper = new RedisSinkITCase.RedisAdditionalDataMapper(RedisCommand.LPUSH);
         RedisCommandDescription redisDataTypeDescription = redisCommandMapper.getCommandDescription();
         assertEquals(RedisDataType.LIST, redisDataTypeDescription.getCommand().getRedisDataType());
         assertNull(redisDataTypeDescription.getAdditionalKey());
